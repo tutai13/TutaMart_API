@@ -9,24 +9,43 @@ namespace TutaMart_API.Models
         [Key]
         public int ProductId { get; set; }
 
+        // Product Name
         [Required]
-        [StringLength(100)]
+        [StringLength(150)]
         public string ProductName { get; set; }
 
+        // SKU
         [Required]
-        [StringLength(500)]
-        public string Detail { get; set; }
+        [StringLength(50)]
+        public string SKU { get; set; }
 
+        // Cost Price
         [Required]
-        public int Price { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal CostPrice { get; set; }
 
+        // Selling Price
         [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal SellingPrice { get; set; }
+
+        // Initial Quantity
+        [Required]
+        public int Quantity { get; set; }
+
+        // Supplier
         [StringLength(200)]
-        public string Images { get; set; }
+        public string? Supplier { get; set; }
 
-        // Khóa ngoại liên kết với Loai
+        // Image path / filename
+        [Required]
+        [StringLength(255)]
+        public string ImageUrl { get; set; }
+
+        // Khóa ngoại Category
         [ForeignKey("Category")]
         public int CategoryId { get; set; }
+
         
         public virtual Category? Category { get; set; }
     }
