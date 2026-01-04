@@ -73,7 +73,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<QrPaymentMemoryService>();
 var app = builder.Build();
 
 //Pipeline
@@ -85,8 +86,9 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
     });
 }
-
+app.UseCors(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 // Kích ho?t xác th?c & phân quy?n
 app.UseAuthentication();

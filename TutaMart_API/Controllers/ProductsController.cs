@@ -15,10 +15,12 @@ namespace TutaMart_API.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public ProductsController(ApplicationDbContext context)
+        public ProductsController(ApplicationDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         // GET: api/Products
@@ -96,15 +98,61 @@ namespace TutaMart_API.Controllers
                 return NotFound();
             }
 
+            //  XÓA FILE ẢNH
+            if (!string.IsNullOrEmpty(product.ImageUrl))
+            {
+                
+                var imagePath = product.ImageUrl.TrimStart('/');
+
+                var fullPath = Path.Combine(_env.WebRootPath, imagePath);
+
+                if (System.IO.File.Exists(fullPath))
+                {
+                    System.IO.File.Delete(fullPath);
+                }
+            }
+
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
+
         private bool ProductExists(int id)
         {
             return _context.Products.Any(e => e.ProductId == id);
         }
+        [HttpPost("upload")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadImage(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("File rỗng");
+
+            var originalName = Path.GetFileNameWithoutExtension(file.FileName);
+            var extension = Path.GetExtension(file.FileName);
+
+            // Ví dụ: coca_20260101_153012.jpg
+            var fileName = $"{originalName}_{DateTime.Now:yyyyMMdd_HHmmss}{extension}";
+
+
+            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img");
+            var filePath = Path.Combine(folderPath, fileName);
+
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return Ok(new
+            {
+                imageUrl = $"/img/{fileName}"
+            });
+        }
+
     }
 }
