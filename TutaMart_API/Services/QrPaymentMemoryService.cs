@@ -14,7 +14,7 @@ public class QrPaymentMemoryService
     public void MarkOrderAsPaid(string referenceCode)
     {
         string key = CacheKeyPrefix + referenceCode;
-        _cache.Set(key, true, TimeSpan.FromMinutes(5)); // hết hạn sau 5 phút
+        _cache.Set(key, true, TimeSpan.FromMinutes(5)); 
         Console.WriteLine($"MemoryCache: Đánh dấu {referenceCode} đã thanh toán");
     }
 
@@ -24,7 +24,7 @@ public class QrPaymentMemoryService
         string key = CacheKeyPrefix + referenceCode;
         if (_cache.TryGetValue(key, out bool paid) && paid)
         {
-            _cache.Remove(key); // xóa sau khi dùng
+            _cache.Remove(key); 
             return true;
         }
         return false;

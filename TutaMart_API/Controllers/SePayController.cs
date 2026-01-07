@@ -7,11 +7,12 @@ using System.Text.RegularExpressions;
 [Route("api/sepay")]
 public class SePayController : ControllerBase
 {
-    private readonly string _apiKey = "YOUR_API_KEY_BAN_TAO_O_DASHBOARD";
+    private readonly string _apiKey;
     private readonly QrPaymentMemoryService _qrService;
 
-    public SePayController(QrPaymentMemoryService qrService)
+    public SePayController(IConfiguration configuration, QrPaymentMemoryService qrService)
     {
+        _apiKey = configuration["SePay:ApiKey"];
         _qrService = qrService;
     }
     [HttpPost("webhook")]
@@ -48,7 +49,6 @@ public class SePayController : ControllerBase
             {
                 Console.WriteLine($"[WEBHOOK] Mã đơn tìm thấy: {referenceCode}");
 
-                // GỌI HÀM SERVICE ĐÃ CÓ SẴN
                 qrService.MarkOrderAsPaid(referenceCode);
 
                 Console.WriteLine($"[WEBHOOK] Đã đánh dấu thanh toán cho mã: {referenceCode}");
