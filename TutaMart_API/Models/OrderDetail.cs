@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace TutaMart_API.Models
 {
@@ -9,7 +10,8 @@ namespace TutaMart_API.Models
         public int OrderDetailId { get; set; }
 
         public int OrderId { get; set; }
-        public virtual Order Order { get; set; }
+        [JsonIgnore]
+        public virtual Order? Order { get; set; }
 
         public int ProductId { get; set; }
         public virtual Product Product { get; set; }

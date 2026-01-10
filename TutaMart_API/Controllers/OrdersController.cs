@@ -101,13 +101,60 @@ namespace TutaMart_API.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetOrders(
+        int page = 1,
+        int pageSize = 5,
+        DateTime? fromDate = null,     
+        DateTime? toDate = null)
+        {
+            if (page < 1) page = 1;
+            pageSize = Math.Clamp(pageSize, 1, 10); // chặn request xấu
+
+            var query = _context.Orders.AsNoTracking();
+            if (fromDate.HasValue)
+                query = query.Where(o => o.OrderDate >= fromDate.Value);
+
+            if (toDate.HasValue)
+                query = query.Where(o => o.OrderDate <= toDate.Value.Date.AddDays(1).AddTicks(-1));
+            var totalRecords = await query.CountAsync();
+
+            var orders = await query
+                .OrderByDescending(o => o.OrderDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(o => new
+                {
+                    o.OrderId,
+                    o.OrderDate,
+                    o.CustomerName,
+                    o.PaymentMethod,
+                    o.TotalAmount,
+
+                    // EF Core chuyển thành subquery SQL
+                    TotalItems = o.OrderDetails
+                        .Select(od => od.Quantity)
+                        .Sum()
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                page,
+                pageSize,
+                totalRecords,
+                totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize),
+                data = orders
+            });
+        }
+
         // Optional: GET chi tiết đơn
         [HttpGet("{id}")]
         public async Task<ActionResult<Order>> GetOrder(int id)
         {
             var order = await _context.Orders
                 .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
+                .ThenInclude(od => od.Product).ThenInclude(p => p.Category)
                 .FirstOrDefaultAsync(o => o.OrderId == id);
 
             if (order == null) return NotFound();
